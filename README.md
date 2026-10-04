@@ -12,13 +12,13 @@ npm ci
 npm run build
 npm test
 npm pack
-npm install -g ./androperator-emulator-0.1.0.tgz
+npm install -g ./androperator-emulator-0.1.1.tgz
 androperator-emulator --version
 ```
 
-The package is not yet published. Consumers can install the packed archive without
-this checkout or development dependencies. After publication, install with
-`npm install -g @androperator/emulator`.
+Install the published CLI with `npm install -g @androperator/emulator`.
+Consumers can also install the packed archive without this checkout or development
+dependencies.
 The executable remains `androperator-emulator`. See [provenance](docs/provenance.md)
 for source history and [plan](docs/plan.md) for follow-on work.
 
