@@ -3,6 +3,10 @@
 The npm package is `@androperator/emulator`; its executable is `androperator-emulator`.
 Node.js 24+ is required. The Android SDK and Java are installed separately.
 
+Agents can use the project [release-package skill](../.agents/skills/release-package/SKILL.md)
+to prepare, publish, resume, or verify a release. Trusted Publishing was verified
+with the automated `0.1.1` release; the bootstrap instructions below remain for reference.
+
 ## First publication
 
 1. Merge the package and workflow setup into `main` and confirm GitHub tests pass.
