@@ -65,6 +65,20 @@ request to complete a release authorizes its PR merge and release tag push.
   Check `npm view @androperator/emulator@<version> version` and
   `npm view @androperator/emulator dist-tags --json --prefer-online`.
   Stable publication must leave `latest` equal to the target.
+- Once npm publication is verified, request the Homebrew update as part of the
+  release; do not ask the user to maintain a separate Homebrew release:
+
+  ```bash
+  gh workflow run update.yml --repo androperator/homebrew-tap --ref main
+  ```
+
+  Use the existing `gh` authorization; do not create a cross-repository CI token.
+  If dispatch fails, report it as deferred: the tap also checks npm hourly.
+  Successful dispatch only proves the request was accepted. Inspect the tap's
+  update run and committed `Formula/emulator.rb` version before reporting
+  Homebrew availability. Homebrew can hold dependencies published less than
+  24 hours ago; the schedule retries. A deferred Homebrew update does not undo
+  the npm release or require a new npm version/tag.
 - npm may accept a publication while still processing it. Retry verification
   briefly with progress updates; never republish while processing. Report
   unresolved availability separately from workflow failure and resume later.
