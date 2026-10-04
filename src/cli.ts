@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { getDefaultRuntimeConfig, listRunningEmulators, listConfiguredAvds, inspectConfiguredAvd,
   createAvd, startAvd, stopAvd, deleteAvd, waitForBootCompletion, waitForEmulatorRegistration,
@@ -24,7 +25,10 @@ async function main(): Promise<unknown> {
     "accept-licenses": { type: "boolean" }, headless: { type: "boolean" }, "timeout-ms": { type: "string" },
   } });
   if (values.output !== undefined && values.output !== "json") usage("--output supports json; for example --output json list");
-  if (values.version) return { name: "androperator-emulator", version: "0.1.0", protocolVersion: 1 };
+  if (values.version) {
+    const { name, version } = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+    return { name, version, protocolVersion: 1 };
+  }
   if (values.help) return { commands, output: "One JSON envelope on stdout; exit 0 success, 1 operation failure, 2 usage error" };
   const [command, target, ...extra] = positionals;
   if (!Object.hasOwn(commands, command ?? "")) usage(`Unknown or missing command: ${command ?? ""}; use --help`);
