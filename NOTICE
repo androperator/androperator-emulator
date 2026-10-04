@@ -1,0 +1,5 @@
+androperator-emulator includes code extracted and adapted from Androperator
+https://github.com/androperator/androperator
+Source revision: 43210a51315ad9e0badd80311bf686596a46b154
+Licensed under the Apache License, Version 2.0. See LICENSE.
+Source paths, ported tests and modifications are recorded in docs/provenance.md.

@@ -1,0 +1,39 @@
+{
+  "name": "androperator-emulator",
+  "version": "0.1.0",
+  "description": "Android emulator lifecycle library and structured CLI extracted from Androperator",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "androperator-emulator": "dist/cli.js"
+  },
+  "files": [
+    "dist/",
+    "!dist/test/",
+    "!dist/**/*.map",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+    "docs/provenance.md"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/test/*.test.js",
+    "prepack": "npm run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^24.12.2"
+  }
+}
