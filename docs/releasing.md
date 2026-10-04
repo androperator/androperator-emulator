@@ -40,8 +40,8 @@ tests, validates the installed archive and publishes that exact archive using OI
 To retry a failed publication, manually run `publish-npm.yml` with the existing tag.
 Published versions cannot be overwritten; retries are for versions not yet published.
 
-The main Androperator project currently bundles the earlier unscoped dependency.
-Migrating it to `@androperator/emulator` is a separate consumer change.
+The main Androperator CLI includes the emulator library. The standalone
+`androperator-emulator` command is an optional installation.
 
 ## Homebrew
 
