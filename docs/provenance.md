@@ -10,11 +10,11 @@ Paths in the first column are relative to the source `apps/node/src/`.
 | --- | --- | --- |
 | `domain/android-emulators/configuredAvds.ts` | `src/configuredAvds.ts` | Remove support policy; validate names; follow locator paths; propagate read errors; recognize empty locator files |
 | `domain/android-emulators/runningEmulators.ts` | `src/runningEmulators.ts` | Remove support annotation; retain serial/name and both boot-property checks |
-| `domain/android-emulators/lifecycle.ts` | `src/lifecycle.ts` | Explicit inputs/license/replacement policy; early size validation; exact image matching; async launch errors; fail-closed delete/replacement |
+| `domain/android-emulators/lifecycle.ts` | `src/lifecycle.ts` | Explicit inputs/license/replacement policy; early size validation; exact image matching and post-install verification; async launch errors; fail-closed delete/replacement |
 | `domain/android-emulators/hostRequirements.ts` | `src/hostRequirements.ts` | Generic runtime/error imports |
 | `domain/android-emulators/constants.ts`, `types.ts` | `src/constants.ts`, `src/types.ts` | Keep only timing/size mechanics and generic metadata |
 | `adapters/android-sdk/hostToolClient.ts` | `src/hostToolClient.ts` | Generic imports |
-| `adapters/android-bridge/processRunner.ts` | `src/processRunner.ts` | Remove shell execution; handle stdin closure; kill timed-out SDK process and report timeout |
+| `adapters/android-bridge/processRunner.ts` | `src/processRunner.ts` | Remove shell execution; handle stdin closure; kill timed-out SDK process group and report timeout |
 | `adapters/android-bridge/adbClient.ts`, `domain/devices/listDevices.ts` | `src/adbClient.ts` | Preserve serial selection; inject consumer logging; check failed/malformed device discovery |
 | `adapters/android-bridge/runtimeConfig.ts` | `src/runtimeConfig.ts` | New minimal runtime contract and SDK discovery adapted from source |
 | `contracts/errors.ts` | `src/errors.ts` | Retain emulator error strings; add boundary errors |
@@ -37,7 +37,7 @@ developer settings remain Androperator policy. Its `emulatorCli.test.ts` and
 - Invalid capacity fails before SDK mutation. Failed post-create configuration
   still attempts cleanup only for a newly created AVD, as in the source.
 - Installed-image matching uses the exact package column instead of substring
-  matching. No remote image catalog or recommendation algorithm was added.
+  matching. Installation is re-queried because license refusal can exit zero. No remote image catalog or recommendation algorithm was added.
 - Config paths follow AVD metadata instead of assuming `<name>.avd` always owns
   the data. Unexpected filesystem errors are no longer silently treated as absent.
 - ADB query errors and offline emulators cannot be interpreted as safe deletion.

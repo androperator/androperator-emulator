@@ -63,6 +63,7 @@ describe("emulator lifecycle", () => {
     runner.queueResult({ code: 0, stdout: "Installed packages:\n", stderr: "" });
     runner.queueResult({ code: 0, stdout: "licenses accepted", stderr: "" });
     runner.queueResult({ code: 0, stdout: "installed", stderr: "" });
+    runner.queueResult({ code: 0, stdout: "system-images;android-35;google_apis_playstore;arm64-v8a | 9", stderr: "" });
 
     const config = getDefaultRuntimeConfig({ runner });
     await ensureSystemImageInstalled(config, "system-images;android-35;google_apis_playstore;arm64-v8a", { acceptLicenses: true });

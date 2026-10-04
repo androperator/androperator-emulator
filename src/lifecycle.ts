@@ -147,6 +147,13 @@ export async function ensureSystemImageInstalled(
       { systemImage }
     );
   }
+  if (!(await isSystemImageInstalled(config, systemImage))) {
+    throw buildError(
+      ERROR_CODES.ANDROID_SYSTEM_IMAGE_INSTALL_FAILED,
+      "System image remains uninstalled; accept its SDK license before retrying, or explicitly set acceptLicenses",
+      { systemImage }
+    );
+  }
 }
 
 export async function createAvd(

@@ -20,6 +20,7 @@ export class NodeProcessRunner implements ProcessRunner {
       const stdin = options?.input !== undefined ? "pipe" : "ignore";
       const proc = spawn(command, args, {
         cwd: options?.cwd,
+        detached: process.platform !== "win32",
         stdio: [stdin, "pipe", "pipe"],
         shell: false,
       });
@@ -38,7 +39,17 @@ export class NodeProcessRunner implements ProcessRunner {
       let timedOut = false;
       const t = setTimeout(() => {
         timedOut = true;
-        proc.kill("SIGKILL");
+        // SDK scripts can launch children that inherit the output pipes.
+        if (process.platform !== "win32" && proc.pid !== undefined) {
+          try { process.kill(-proc.pid, "SIGKILL"); }
+          catch (error) { if ((error as NodeJS.ErrnoException).code !== "ESRCH") proc.kill("SIGKILL"); }
+        } else {
+          proc.kill("SIGKILL");
+        }
+        proc.stdout?.destroy();
+        proc.stderr?.destroy();
+        proc.stdin?.destroy();
+        resolve({ stdout, stderr: `${stderr}\nProcess timed out after ${timeoutMs}ms`, code: null });
       }, timeoutMs);
 
       proc.on("error", (err) => {

@@ -58,8 +58,9 @@ test("installation matches whole package IDs and does not accept licenses by def
   assert.equal(await isSystemImageInstalled(config, image), false);
   runner.queueResult(success());
   runner.queueResult(success());
+  runner.queueResult(success(`${image} | 9 | installed`));
   await ensureSystemImageInstalled(config, image);
-  assert.deepEqual(runner.calls.at(-1)?.args, [image]);
+  assert.deepEqual(runner.calls.at(-2)?.args, [image]);
   assert.ok(runner.calls.every((call) => !call.args.includes("--licenses")));
 });
 
@@ -88,4 +89,25 @@ test("CLI emits one JSON document with usage exit codes and global flag placemen
     assert.equal(JSON.parse(result.stdout).error.code, "USAGE");
     assert.equal(result.stderr, "");
   }
+});
+
+test("zero-exit skipped installation is not reported as success", async () => {
+  const runner = new FakeProcessRunner();
+  runner.queueResult(success());
+  runner.queueResult(success("Skipping package because the license was not accepted"));
+  runner.queueResult(success());
+  await assert.rejects(ensureSystemImageInstalled(getDefaultRuntimeConfig({ runner }), image), { code: "ANDROID_SYSTEM_IMAGE_INSTALL_FAILED" });
+});
+
+test("timeout kills the owned process group including descendants holding output pipes", { skip: process.platform === "win32" }, async () => {
+  const started = Date.now();
+  const result = await new NodeProcessRunner().run("/bin/sh", ["-c", "sleep 10 & echo $!; wait"], { timeoutMs: 150 });
+  assert.equal(result.code, null);
+  assert.ok(Date.now() - started < 2000);
+  const pid = Number(result.stdout.trim());
+  assert.ok(pid > 0);
+  // Give the host a moment to reap the killed descendant.
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  const state = spawnSync("ps", ["-p", String(pid), "-o", "stat="], { encoding: "utf8" }).stdout.trim();
+  assert.ok(state === "" || state.startsWith("Z"), `descendant still alive: ${state}`);
 });

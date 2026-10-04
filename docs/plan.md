@@ -79,10 +79,11 @@ to this repository. A detailed final mapping belongs in `docs/provenance.md`.
 ## Evidence and remaining work
 
 - Initial source inventory verified against the baseline above.
-- Phase 1 implementation built successfully; 25 tests pass, including ported
+- Phase 1 implementation built successfully; 27 tests pass, including ported
   mechanics and new boundary/CLI checks. Packed install exposes the CLI and library.
 - Cleanup: no task pack to retire. Simplification removed policy coupling, shell
-  execution and unnecessary discovery typing. Fresh Astra review pending.
+  execution and unnecessary discovery typing. First Astra pass found skipped-install and timeout-descendant bugs; repaired
+  with regression coverage. Fresh review pending.
 - Phase 2 migration and consumer validation pending.
 - Follow-on: hardware/image catalogs, host-aware selection, streaming/cancellation,
   dynamic storage/snapshot policy, ADBuddy discovery and native UI.
