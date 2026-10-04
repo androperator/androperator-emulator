@@ -1,4 +1,4 @@
-# androperator-emulator
+# @androperator/emulator
 
 Android SDK emulator lifecycle library and JSON CLI, extracted from Androperator.
 Requires Node.js 24+, Android SDK tools (`adb`, `emulator`, `sdkmanager`,
@@ -17,7 +17,8 @@ androperator-emulator --version
 ```
 
 The package is not yet published. Consumers can install the packed archive without
-this checkout or development dependencies. See [provenance](docs/provenance.md)
+this checkout or development dependencies. After publication, install with `npm install -g @androperator/emulator`.
+The executable remains `androperator-emulator`. See [provenance](docs/provenance.md)
 for source history and [plan](docs/plan.md) for follow-on work.
 
 ## CLI
@@ -76,7 +77,7 @@ snapshot-free storage are follow-on capabilities.
 ## Library
 
 ```js
-import { getDefaultRuntimeConfig, createAvd, listConfiguredAvds } from 'androperator-emulator';
+import { getDefaultRuntimeConfig, createAvd, listConfiguredAvds } from '@androperator/emulator';
 const config = getDefaultRuntimeConfig();
 await createAvd(config, {
   name: 'My_AVD',
@@ -101,3 +102,8 @@ Explicit runtime paths override defaults. CLI environment overrides are
 AVDs use `ANDROID_AVD_HOME` or `~/.android/avd`; locator `.ini` entries with
 `path` or `path.rel` can redirect each AVD's config. Other Android home conventions
 are not yet supported. Export `ANDROID_AVD_HOME` consistently for those setups.
+
+## Tests and releases
+
+GitHub Actions builds, tests and checks a packed installation on Linux and macOS.
+See [releasing](docs/releasing.md) for the first publication and subsequent releases.
