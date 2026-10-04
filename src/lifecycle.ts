@@ -112,7 +112,12 @@ export async function isSystemImageInstalled(config: RuntimeConfig, systemImage:
       { systemImage }
     );
   }
-  return result.stdout.split("\n").some((line) => line.split("|")[0].trim() === systemImage);
+  return result.stdout.split("\n").some((line) => {
+    // Legacy sdkmanager uses semicolon IDs and pipes; the Android CLI shim
+    // uses slash IDs and whitespace columns. Compare the entire first token.
+    const packageId = line.trim().split(/[\s|]+/, 1)[0].replaceAll("/", ";");
+    return packageId === systemImage;
+  });
 }
 
 export async function acceptAndroidSdkLicenses(config: RuntimeConfig): Promise<void> {

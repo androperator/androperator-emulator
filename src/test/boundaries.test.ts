@@ -111,3 +111,23 @@ test("timeout kills the owned process group including descendants holding output
   const state = spawnSync("ps", ["-p", String(pid), "-o", "stat="], { encoding: "utf8" }).stdout.trim();
   assert.ok(state === "" || state.startsWith("Z"), `descendant still alive: ${state}`);
 });
+
+
+test("installed-image detection supports Android CLI shim output without prefix matches", async () => {
+  const runner = new FakeProcessRunner();
+  const config = getDefaultRuntimeConfig({ runner });
+  const path = image.replaceAll(";", "/");
+  for (const [output, expected] of [
+    [`Installed packages:\n  ${path}  9.0.0  Google APIs image`, true],
+    [`  ${path}-other  9.0.0  Other image`, false],
+    [`  another/package  1.0.0  mentions ${path}`, false],
+    [`  ${image} | 9 | Google APIs image`, true],
+    ["Installed packages:\n", false],
+  ] as const) {
+    runner.queueResult(success(output));
+    assert.equal(await isSystemImageInstalled(config, image), expected, output);
+  }
+  runner.queueResult(success(`  ${path}  9.0.0  Google APIs image`));
+  await ensureSystemImageInstalled(config, image, { acceptLicenses: true });
+  assert.ok(runner.calls.every((call) => call.args[0] === "--list_installed"));
+});

@@ -56,6 +56,9 @@ Replacement and deletion refuse running AVDs and fail closed if ADB discovery
 fails or an emulator is offline/unauthorized. These are point-in-time checks;
 callers must serialize concurrent lifecycle changes for the same AVD.
 
+Installed-image detection accepts both the legacy semicolon-and-pipe table and
+the Android CLI shim's slash-separated package IDs and whitespace columns.
+
 Downloads do not automatically accept SDK licenses. Add `--accept-licenses` to
 `download` or `create` only to authorize `sdkmanager --licenses` acceptance for
 all outstanding SDK licenses. Otherwise licenses must already be accepted.
