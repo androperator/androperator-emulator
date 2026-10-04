@@ -37,7 +37,14 @@ jobs:
           node-version: '24.14.1'
       - name: Check npm supports OIDC
         run: |
-          node --input-type=module -e "import { execFileSync } from 'node:child_process'; const [major, minor, patch] = execFileSync('npm', ['--version'], {encoding:'utf8'}).trim().split('.').map(Number); if (!(major > 11 || (major === 11 && (minor > 5 || (minor === 5 && patch >= 1))))) throw new Error('npm 11.5.1+ required');"
+          node --input-type=module <<'JS'
+          import { execFileSync } from 'node:child_process';
+          const [major, minor, patch] = execFileSync('npm', ['--version'], { encoding: 'utf8' })
+            .trim().split('.').map(Number);
+          const supportsOidc = major > 11 ||
+            (major === 11 && (minor > 5 || (minor === 5 && patch >= 1)));
+          if (!supportsOidc) throw new Error('npm 11.5.1+ required');
+          JS
       - run: npm ci
       - run: npm run build
       - run: npm test

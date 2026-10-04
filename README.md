@@ -17,7 +17,8 @@ androperator-emulator --version
 ```
 
 The package is not yet published. Consumers can install the packed archive without
-this checkout or development dependencies. After publication, install with `npm install -g @androperator/emulator`.
+this checkout or development dependencies. After publication, install with
+`npm install -g @androperator/emulator`.
 The executable remains `androperator-emulator`. See [provenance](docs/provenance.md)
 for source history and [plan](docs/plan.md) for follow-on work.
 
