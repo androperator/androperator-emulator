@@ -40,5 +40,20 @@ tests, validates the installed archive and publishes that exact archive using OI
 To retry a failed publication, manually run `publish-npm.yml` with the existing tag.
 Published versions cannot be overwritten; retries are for versions not yet published.
 
-The main Androperator project currently bundles the earlier unscoped dependency.
-Migrating it to `@androperator/emulator` is a separate consumer change.
+The main Androperator CLI includes the emulator library. The standalone
+`androperator-emulator` command is an optional installation.
+
+## Homebrew
+
+[androperator/homebrew-tap](https://github.com/androperator/homebrew-tap) provides
+`brew install androperator/tap/emulator` using the same npm archive. Its hourly
+workflow checks npm `latest`, verifies archives, tests candidate installations,
+and commits formula updates automatically. No separate application build,
+publication account, or cross-repository token is needed.
+
+After verifying an npm release, the release-package skill requests an immediate
+check using `gh workflow run update.yml --repo androperator/homebrew-tap --ref main`.
+A failed dispatch is deferred to the hourly schedule. Dispatch success is not
+publication proof: check the workflow conclusion and committed
+`Formula/emulator.rb` version. Homebrew can defer dependencies published in the
+previous 24 hours. Retry the tap workflow without recreating the npm release.

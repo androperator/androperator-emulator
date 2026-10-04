@@ -22,6 +22,21 @@ dependencies.
 The executable remains `androperator-emulator`. See [provenance](docs/provenance.md)
 for source history and [plan](docs/plan.md) for follow-on work.
 
+## Homebrew installation
+
+```sh
+brew install androperator/tap/emulator
+brew upgrade androperator/tap/emulator
+```
+
+The executable remains `androperator-emulator`. Homebrew manages Node and uses
+this package's npm release archive. Android SDK tools and Java are configured
+separately. When moving from a global npm installation, first remove it with
+`npm uninstall -g @androperator/emulator` to avoid executable conflicts.
+New versions become available after automatic tap validation; Homebrew can
+hold newly published dependencies for 24 hours. Do not upgrade a Homebrew
+installation using npm.
+
 ## CLI
 
 ```sh
