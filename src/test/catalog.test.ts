@@ -25,6 +25,7 @@ const legacy = `Installed packages:
 Available Packages:
   ${image} | 4 | Android TV image
   system-images;android-37.2;google_apis_playstore_ps16k;arm64-v8a | 5 | 16 KB Google Play image
+  system-images;android-35-ext15;android-automotive;arm64-v8a | 1 | Automotive extension image
   system-images;android-Zebra;default;x86_64 | 1 | Preview image
 Available Updates:
   ID | Installed | Available
@@ -49,12 +50,13 @@ test("profiles return stable create identifiers and optional metadata", () => {
 
 test("legacy catalogs combine installed and available versions without confusing updates", () => {
   const images = parseSystemImages(legacy);
-  assert.equal(images.length, 3);
+  assert.equal(images.length, 4);
   assert.deepEqual(images.find((item) => item.id === image), {
     id: image, platform: "android-36", apiLevel: 36, tag: "android-tv", abi: "arm64-v8a",
     description: "Android TV image", installed: true, installedVersion: "3", availableVersion: "4",
   });
   assert.equal(images.find((item) => item.platform === "android-37.2")?.apiLevel, 37);
+  assert.equal(images.find((item) => item.platform === "android-35-ext15")?.apiLevel, 35);
   assert.equal(images.find((item) => item.platform === "android-Zebra")?.apiLevel, null);
 });
 

@@ -78,7 +78,7 @@ export function parseSystemImages(output: string): SystemImage[] {
     const parts = /^system-images;(android-[^;\s]+);([^;\s]+);([^;\s]+)$/.exec(id);
     if (!parts || !version || !description) catalogError(`Unrecognized system image row: ${line.trim()}`);
     const [, platform, tag, abi] = parts;
-    const api = /^android-(\d+)(?:\.\d+)*$/.exec(platform);
+    const api = /^android-(\d+)(?:\.\d+)*(?:-ext\d+)?$/.exec(platform);
     const image = images.get(id) ?? {
       id, platform, apiLevel: api ? Number(api[1]) : null, tag, abi, description,
       installed: false, installedVersion: null, availableVersion: null,
