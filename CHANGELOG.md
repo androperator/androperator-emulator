@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Add hardware-profile and system-image catalogs through library APIs and JSON
+  `profiles` / `images [--installed]` commands, with capability discovery.
+
 ## [0.1.1]
 
 - Update installation documentation for the published scoped package.
