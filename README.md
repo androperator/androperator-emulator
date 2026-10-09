@@ -90,6 +90,31 @@ It does not resize existing userdata, guarantee free space, or impose a host dis
 quota. Use a fresh AVD when changing capacity. Dynamic qcow2 allocation and
 snapshot-free storage are follow-on capabilities.
 
+## Agent skill
+
+[Create Android Emulator](.agents/skills/create-android-emulator/SKILL.md) guides an
+agent through image/profile discovery, creation with practical development
+storage (24G by default), boot verification and actual guest storage checks using
+this package. Invoke it as `$create-android-emulator`.
+
+The source lives in `.agents/skills/create-android-emulator/`, the repository
+skill location supported by Codex. The same folder is included in the npm
+archive; the release-only skill is excluded. Installing the npm package does
+not automatically register its skill with an agent.
+
+To use it in another project, copy the entire skill folder from
+`node_modules/@androperator/emulator/.agents/skills/create-android-emulator/`
+into that project's `.agents/skills/`. For a global npm installation, the source
+is under `$(npm root -g)/@androperator/emulator/.agents/skills/`. For personal
+Codex use across projects, copy it into `~/.agents/skills/` instead. Copies should
+be refreshed when upgrading the library.
+
+Each skill needs a `SKILL.md` with name/description frontmatter and instructions;
+`agents/openai.yaml` supplies optional UI metadata. Repository skills work well
+for checked-in workflows. Plugins provide an installation unit for broader skill
+distribution and optional connectors. See the official
+[skill discovery and distribution guidance](https://learn.chatgpt.com/docs/build-skills).
+
 ## Library
 
 ```js

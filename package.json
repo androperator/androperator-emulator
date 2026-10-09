@@ -21,7 +21,8 @@
     "README.md",
     "LICENSE",
     "NOTICE",
-    "docs/provenance.md"
+    "docs/provenance.md",
+    ".agents/skills/create-android-emulator/"
   ],
   "engines": {
     "node": ">=24"
