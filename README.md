@@ -40,6 +40,9 @@ installation using npm.
 ## CLI
 
 ```sh
+androperator-emulator profiles
+androperator-emulator images
+androperator-emulator images --installed
 androperator-emulator list
 androperator-emulator inspect My_AVD
 androperator-emulator status
@@ -66,6 +69,37 @@ Failures have `ok: false` and `error: {code, message, details?}` instead of `dat
 The `--version` response identifies the package and machine protocol without SDK
 access. ADBuddy can probe this command after finding the separately installed
 executable; native discovery and installation UI are separate work.
+
+### Creation catalogs
+
+`profiles` returns `{profiles: [{id, name, manufacturer, tag}]}` from the SDK's
+hardware definitions. Pass the stable `id` to `create --profile`; the SDK's
+numeric row index is not returned. Missing manufacturer or tag values are null.
+
+`images` queries installed and available SDK packages and returns
+`{images: [{id, platform, apiLevel, tag, abi, description, installed,
+installedVersion, availableVersion}]}`. `images --installed` queries only local
+packages, so it does not require fetching the remote catalog. Pass `id` directly
+to `create --image`. IDs use semicolons regardless of the SDK output format.
+Versions remain strings; an absent installed or available version is null.
+`platform` preserves the complete platform identifier, including minor versions
+or preview names. `apiLevel` is the numeric major API for numeric platforms and
+null for codenames. Results are sorted by ID, with each image appearing once.
+
+These are catalogs, not compatibility recommendations. Callers must select a
+suitable image/profile/host combination; do not assume every listed image runs
+on this Mac. Remote queries can require network access and may take longer than
+local queries. Tool or unrecognized-format failures return
+`ANDROID_CATALOG_QUERY_FAILED`; empty recognized catalogs return empty arrays.
+The legacy SDK table and the Android CLI shim's slash-separated table are supported.
+
+Library consumers can call `listHardwareProfiles(config)` and
+`listSystemImages(config, {installedOnly: true})`; omitting the latter option
+includes available images. Neither command starts ADB or accepts licenses.
+`--version` now includes `capabilities: ["catalog.profiles", "catalog.images"]`
+in its data object. Consumers should treat missing capabilities as unsupported;
+the JSON envelope remains protocol version 1. Earlier published versions lack
+these catalog commands.
 
 Create requires explicit image, hardware profile and storage capacity. Existing
 AVDs are refused unless `--replace` is supplied, which discards existing data.

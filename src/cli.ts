@@ -3,9 +3,10 @@ import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { getDefaultRuntimeConfig, listRunningEmulators, listConfiguredAvds, inspectConfiguredAvd,
   createAvd, startAvd, stopAvd, deleteAvd, waitForBootCompletion, waitForEmulatorRegistration,
-  ensureSystemImageInstalled, setAvdDataPartitionSize } from "./index.js";
+  ensureSystemImageInstalled, setAvdDataPartitionSize, listHardwareProfiles, listSystemImages } from "./index.js";
 
 const commands = {
+  profiles: "profiles", images: "images [--installed]",
   list: "list", inspect: "inspect <name>", status: "status",
   download: "download <system-image> [--accept-licenses]",
   create: "create <name> --image <system-image> --profile <hardware-profile> --storage-size <12G> [--replace] [--accept-licenses]",
@@ -19,7 +20,7 @@ function usage(message: string): never {
 
 async function main(): Promise<unknown> {
   const { values, positionals } = parseArgs({ allowPositionals: true, strict: true, options: {
-    help: { type: "boolean", short: "h" }, version: { type: "boolean" }, json: { type: "boolean" },
+    installed: { type: "boolean" }, help: { type: "boolean", short: "h" }, version: { type: "boolean" }, json: { type: "boolean" },
     output: { type: "string" }, image: { type: "string" }, profile: { type: "string" },
     "storage-size": { type: "string" }, replace: { type: "boolean" },
     "accept-licenses": { type: "boolean" }, headless: { type: "boolean" }, "timeout-ms": { type: "string" },
@@ -27,14 +28,15 @@ async function main(): Promise<unknown> {
   if (values.output !== undefined && values.output !== "json") usage("--output supports json; for example --output json list");
   if (values.version) {
     const { name, version } = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
-    return { name, version, protocolVersion: 1 };
+    return { name, version, protocolVersion: 1, capabilities: ["catalog.profiles", "catalog.images"] };
   }
   if (values.help) return { commands, output: "One JSON envelope on stdout; exit 0 success, 1 operation failure, 2 usage error" };
   const [command, target, ...extra] = positionals;
   if (!Object.hasOwn(commands, command ?? "")) usage(`Unknown or missing command: ${command ?? ""}; use --help`);
-  const needsTarget = !["list", "status"].includes(command);
+  const needsTarget = !["list", "status", "profiles", "images"].includes(command);
   if (extra.length || (needsTarget ? target === undefined || target.trim() === "" : target !== undefined)) usage(`Use ${commands[command as keyof typeof commands]}`);
   const allowed: Record<string, string[]> = {
+    images: ["installed"],
     create: ["image", "profile", "storage-size", "replace", "accept-licenses"],
     download: ["accept-licenses"], start: ["headless"], wait: ["timeout-ms"], storage: ["storage-size"],
   };
@@ -48,6 +50,8 @@ async function main(): Promise<unknown> {
   }
   const config = getDefaultRuntimeConfig();
   switch (command) {
+    case "profiles": return { profiles: await listHardwareProfiles(config) };
+    case "images": return { images: await listSystemImages(config, { installedOnly: values.installed }) };
     case "status": return { devices: await listRunningEmulators(config) };
     case "list": {
       const running = await listRunningEmulators(config);

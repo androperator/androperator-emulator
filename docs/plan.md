@@ -119,8 +119,9 @@ to this repository. A detailed final mapping belongs in `docs/provenance.md`.
 
 These are separate capabilities, not prerequisites for the completed extraction.
 
-3. **Catalog and selection:** expose SDK hardware profiles and downloadable system
-   images, then add explicit host/ABI/API filtering and deterministic suggestions.
+3. **Catalog and selection:** SDK hardware profiles and installed/downloadable system
+   images are now exposed by `profiles`, `images`, and matching library APIs.
+   Explicit host/ABI/API filtering and deterministic suggestions remain follow-on work.
    Keep Androperator compatibility requirements in its consumer. Verify parsers
    against SDK output fixtures and available host architectures.
 4. **Download progress and cancellation:** extend the runner and library with
@@ -134,3 +135,20 @@ These are separate capabilities, not prerequisites for the completed extraction.
    CLI, check its protocol/version, and build the native creation UI against its
    structured contract. Node is not bundled with ADBuddy. UI implementation is
    outside this extraction task.
+
+## Catalog extension validation
+
+- Added `profiles` and `images [--installed]`, matching library APIs, and additive
+  catalog capability flags in the version response. These are new catalog
+  features built on the extracted SDK process boundary, not a reimplementation
+  of creation or download behavior.
+- Build and all 34 tests passed, including legacy/shim catalog formats, installed
+  and available version merging, strict CLI arguments, structured failures, and
+  existing lifecycle regressions.
+- Live read-only queries returned 96 hardware profiles, 329 system images across
+  installed/available catalogs, and 8 installed images. The TV profile and API 36
+  ARM64 TV image returned IDs suitable for the existing creation API.
+- No emulator was created, deleted, or started by these checks. The SDK queried
+  remote catalog metadata; no system image was installed.
+- Native source selection guidance is recorded in `adbuddy-integration.md`, based
+  on Androperator's current local/published package resolver.
