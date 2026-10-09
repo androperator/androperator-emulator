@@ -29,10 +29,29 @@ request to complete a release authorizes its PR merge and release tag push.
    and create a release branch from it. When resuming, inspect existing release
    PRs, tags and runs first; reuse the matching state rather than repeating
    completed stages.
-2. Establish the stable version. If unspecified, infer the next patch from the
-   manifest and npm state; resolve ambiguity before editing. Check
-   `npm view @androperator/emulator versions --json` and local/remote tags.
-   Auth or network failures do not prove a version is unpublished.
+2. Establish and sanity-check the version before editing, opening a release PR,
+   merging, or pushing a tag:
+   - Read the manifest, npm's latest stable publication and local/remote tags.
+     Use the current release baseline, not a historical example in this skill.
+     Resolve conflicting version state before selecting a target. Auth or network
+     failures do not prove a version is unpublished.
+   - Require an explicit stable `X.Y.Z` version (an optional leading `v` is fine).
+     Do not silently expand shorthand such as `2.0` to `2.0.0`; ask the user for
+     the intended full version. If unspecified, infer the next patch only after
+     establishing the baseline.
+   - Routine bumps within the current major version are the next patch or the
+     next minor with patch reset: `0.1.1 -> 0.1.2` and `0.1.1 -> 0.2.0` can
+     proceed under existing release authorization.
+   - Any major-version increase, skipped patch/minor sequence, downgrade, or
+     version below an already published stable release requires explicit user
+     confirmation of the exact target and baseline. For example, `0.1.1 ->
+     2.0.0` is unusual even if syntactically valid. Explain the jump and ask
+     whether it was intended; a bare release request with that number does not
+     count as confirmation of the unusual jump. A prior explicit acknowledgment
+     of this exact jump is sufficient; do not ask again.
+   - An existing published target is not available for a new release. Treat it
+     as verification/resume work, not as permission to overwrite it, regardless
+     of confirmation. Recheck availability before tagging.
 3. Update manifest and lockfile together using
    `npm version <version> --no-git-tag-version`. Add exactly one CHANGELOG entry
    grounded in changes since the previous release commit. Inspect README's
