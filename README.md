@@ -12,7 +12,7 @@ npm ci
 npm run build
 npm test
 npm pack
-npm install -g ./androperator-emulator-0.1.1.tgz
+npm install -g ./androperator-emulator-0.2.0.tgz
 androperator-emulator --version
 ```
 
