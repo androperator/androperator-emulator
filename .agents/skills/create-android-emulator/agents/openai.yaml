@@ -1,0 +1,4 @@
+interface:
+  display_name: "Create Android Emulator"
+  short_description: "Create and verify an Android development emulator"
+  default_prompt: "Use $create-android-emulator to create an Android development emulator with @androperator/emulator."

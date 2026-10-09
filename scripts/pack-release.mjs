@@ -5,6 +5,10 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 const manifest = JSON.parse(readFileSync('package.json', 'utf8'));
+const skillFiles = [
+  '.agents/skills/create-android-emulator/SKILL.md',
+  '.agents/skills/create-android-emulator/agents/openai.yaml',
+];
 assert.equal(manifest.name, '@androperator/emulator');
 if (process.env.RELEASE_TAG) {
   assert.match(process.env.RELEASE_TAG, /^v\d+\.\d+\.\d+$/);
@@ -15,14 +19,17 @@ const run = (command, args, cwd = process.cwd()) => execFileSync(command, args, 
 try {
   const [packed] = JSON.parse(run('npm', ['pack', '--json', '--pack-destination', temporary]));
   const files = packed.files.map(({ path }) => path);
-  for (const required of ['package.json', 'dist/index.js', 'dist/index.d.ts', 'dist/cli.js', 'README.md', 'LICENSE', 'NOTICE']) {
+  for (const required of ['package.json', 'dist/index.js', 'dist/index.d.ts', 'dist/cli.js', 'README.md', 'LICENSE', 'NOTICE', ...skillFiles]) {
     assert.ok(files.includes(required), `Missing ${required}`);
   }
-  assert.ok(files.every((path) => ['package.json', 'README.md', 'LICENSE', 'NOTICE', 'docs/provenance.md'].includes(path)
+  assert.ok(files.every((path) => ['package.json', 'README.md', 'LICENSE', 'NOTICE', 'docs/provenance.md', ...skillFiles].includes(path)
     || (path.startsWith('dist/') && !path.startsWith('dist/test/') && !path.endsWith('.map'))), 'Unexpected archive contents');
   const archive = join(temporary, packed.filename);
   writeFileSync(join(temporary, 'package.json'), JSON.stringify({ private: true, type: 'module' }));
   run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', archive], temporary);
+  for (const path of skillFiles) {
+    assert.equal(readFileSync(join(temporary, 'node_modules/@androperator/emulator', path), 'utf8'), readFileSync(path, 'utf8'));
+  }
   const cli = join(temporary, 'node_modules/.bin/androperator-emulator');
   const version = JSON.parse(run(cli, ['--version'], temporary));
   assert.equal(version.ok, true);
