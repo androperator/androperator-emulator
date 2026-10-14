@@ -79,3 +79,36 @@ test("DHU refuses unavailable devices before forwarding", async () => {
     await assert.rejects(runDesktopHeadUnit(f.config, "-bad"), { code: "INVALID_ARGUMENT" });
   } finally { await rm(f.sdkRoot, { recursive: true, force: true }); }
 });
+
+test("CLI SIGTERM stops its DHU child and removes the allocated tunnel", async () => {
+  const { spawn } = await import("node:child_process");
+  const { readFile } = await import("node:fs/promises");
+  const f = await fixture();
+  try {
+    const marker = join(f.sdkRoot, "started");
+    const cleanup = join(f.sdkRoot, "cleanup");
+    const adb = join(f.sdkRoot, "adb");
+    await writeFile(adb, `#!/usr/bin/env node\nimport { writeFileSync } from 'node:fs';\nconst a=process.argv.slice(2);\nif(a.includes('get-state')) console.log('device');\nelse if(a.includes('--remove')) writeFileSync(${JSON.stringify(cleanup)}, a.join(' '));\nelse console.log('41300');\n`, { mode: 0o700 });
+    await writeFile(f.executable, `#!/usr/bin/env node\nimport { writeFileSync } from 'node:fs';\nwriteFileSync(${JSON.stringify(marker)}, String(process.pid));\nsetInterval(()=>{},1000);\n`, { mode: 0o700 });
+    const cli = spawn(process.execPath, [new URL("../cli.js", import.meta.url).pathname, "dhu-start", "test-phone"], {
+      env: { ...process.env, ANDROID_HOME: f.sdkRoot, ADB_PATH: adb }, stdio: ["ignore", "pipe", "pipe"],
+    });
+    let output = "";
+    cli.stdout.on("data", d => { output += d.toString(); });
+    const exited = new Promise<number | null>((resolve, reject) => { cli.once("close", resolve); cli.once("error", reject); });
+    try {
+      let pid = 0;
+      for (let attempt = 0; attempt < 100; attempt++) {
+        pid = Number(await readFile(marker, "utf8").catch(() => "0"));
+        if (pid) break;
+        await new Promise(resolve => setTimeout(resolve, 20));
+      }
+      assert.ok(pid, "DHU child started");
+      cli.kill("SIGTERM");
+      assert.equal(await exited, 0);
+      assert.equal(JSON.parse(output).data.stopped, true);
+      assert.equal(await readFile(cleanup, "utf8"), "-s test-phone forward --remove tcp:41300");
+      assert.throws(() => process.kill(pid, 0), { code: "ESRCH" });
+    } finally { cli.kill("SIGTERM"); }
+  } finally { await rm(f.sdkRoot, { recursive: true, force: true }); }
+});
