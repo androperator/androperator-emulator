@@ -108,7 +108,7 @@ test("CLI catalogs expose JSON, capabilities, strict options and operation error
       assert.equal(result.stderr, "");
       if (args.includes("--installed")) assert.equal(envelope.data.images.length, 1);
     }
-    assert.deepEqual(JSON.parse(run(["--version"]).stdout).data.capabilities, ["catalog.profiles", "catalog.images"]);
+    assert.deepEqual(JSON.parse(run(["--version"]).stdout).data.capabilities, ["catalog.profiles", "catalog.images", "dhu"]);
     for (const args of [["images", "extra"], ["profiles", "--installed"], ["images", "--profile", "tv_720p"], ["images", "--installed=false"]]) {
       const result = run(args);
       assert.equal(result.status, 2, result.stdout);

@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { NodeProcessRunner, type ProcessRunner } from "./processRunner.js";
 
 export interface RuntimeConfig {
+  sdkRoot?: string;
   adbPath: string;
   emulatorPath: string;
   sdkmanagerPath: string;
@@ -28,6 +29,7 @@ export function getDefaultRuntimeConfig(overrides: Partial<RuntimeConfig> = {}):
   }
   const defined = Object.fromEntries(Object.entries(overrides).filter(([, value]) => value !== undefined));
   return {
+    sdkRoot: sdkRoots[0],
     adbPath: tool("adb", "platform-tools/adb", "ADB_PATH"),
     emulatorPath: tool("emulator", "emulator/emulator", "EMULATOR_PATH"),
     sdkmanagerPath: tool("sdkmanager", "cmdline-tools/latest/bin/sdkmanager", "SDKMANAGER_PATH"),

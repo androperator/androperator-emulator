@@ -3,9 +3,10 @@ import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { getDefaultRuntimeConfig, listRunningEmulators, listConfiguredAvds, inspectConfiguredAvd,
   createAvd, startAvd, stopAvd, deleteAvd, waitForBootCompletion, waitForEmulatorRegistration,
-  ensureSystemImageInstalled, setAvdDataPartitionSize, listHardwareProfiles, listSystemImages } from "./index.js";
+  ensureSystemImageInstalled, setAvdDataPartitionSize, listHardwareProfiles, listSystemImages, desktopHeadUnitStatus, installDesktopHeadUnit, runDesktopHeadUnit } from "./index.js";
 
 const commands = {
+  "dhu-status": "dhu-status", "dhu-install": "dhu-install", "dhu-start": "dhu-start <serial>",
   profiles: "profiles", images: "images [--installed]",
   list: "list", inspect: "inspect <name>", status: "status",
   download: "download <system-image> [--accept-licenses]",
@@ -28,12 +29,12 @@ async function main(): Promise<unknown> {
   if (values.output !== undefined && values.output !== "json") usage("--output supports json; for example --output json list");
   if (values.version) {
     const { name, version } = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
-    return { name, version, protocolVersion: 1, capabilities: ["catalog.profiles", "catalog.images"] };
+    return { name, version, protocolVersion: 1, capabilities: ["catalog.profiles", "catalog.images", "dhu"] };
   }
   if (values.help) return { commands, output: "One JSON envelope on stdout; exit 0 success, 1 operation failure, 2 usage error" };
   const [command, target, ...extra] = positionals;
   if (!Object.hasOwn(commands, command ?? "")) usage(`Unknown or missing command: ${command ?? ""}; use --help`);
-  const needsTarget = !["list", "status", "profiles", "images"].includes(command);
+  const needsTarget = !["list", "status", "profiles", "images", "dhu-status", "dhu-install"].includes(command);
   if (extra.length || (needsTarget ? target === undefined || target.trim() === "" : target !== undefined)) usage(`Use ${commands[command as keyof typeof commands]}`);
   const allowed: Record<string, string[]> = {
     images: ["installed"],
@@ -50,6 +51,16 @@ async function main(): Promise<unknown> {
   }
   const config = getDefaultRuntimeConfig();
   switch (command) {
+    case "dhu-status": return desktopHeadUnitStatus(config);
+    case "dhu-install": return installDesktopHeadUnit(config);
+    case "dhu-start": {
+      const controller = new AbortController();
+      const stop = () => controller.abort();
+      process.on("SIGTERM", stop);
+      process.on("SIGINT", stop);
+      try { return await runDesktopHeadUnit(config, target, controller.signal); }
+      finally { process.removeListener("SIGTERM", stop); process.removeListener("SIGINT", stop); }
+    }
     case "profiles": return { profiles: await listHardwareProfiles(config) };
     case "images": return { images: await listSystemImages(config, { installedOnly: values.installed }) };
     case "status": return { devices: await listRunningEmulators(config) };
