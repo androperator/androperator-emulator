@@ -23,7 +23,7 @@ test("DHU status is read-only and installation preserves SDK licenses", async ()
     assert.equal((await desktopHeadUnitStatus(f.config)).installed, false);
     f.runner.queueResult(ok(), () => writeFile(f.executable, "fixture", { mode: 0o600 }));
     assert.equal((await installDesktopHeadUnit(f.config)).executableReady, true);
-    assert.deepEqual(f.runner.calls[0].args, ["extras;google;auto"]);
+    assert.deepEqual(f.runner.calls[0].args, [`--sdk_root=${f.sdkRoot}`, "extras;google;auto"]);
   } finally { await rm(f.sdkRoot, { recursive: true, force: true }); }
 });
 
@@ -111,4 +111,46 @@ test("CLI SIGTERM stops its DHU child and removes the allocated tunnel", async (
       assert.throws(() => process.kill(pid, 0), { code: "ESRCH" });
     } finally { cli.kill("SIGTERM"); }
   } finally { await rm(f.sdkRoot, { recursive: true, force: true }); }
+});
+
+
+test("explicit SDK root controls default tools and is required before installation", async () => {
+  const f = await fixture();
+  try {
+    const saved = process.env.SDKMANAGER_PATH;
+    delete process.env.SDKMANAGER_PATH;
+    try {
+      assert.equal(getDefaultRuntimeConfig({ sdkRoot: f.sdkRoot }).sdkmanagerPath,
+        join(f.sdkRoot, "cmdline-tools/latest/bin/sdkmanager"));
+    } finally {
+      if (saved === undefined) delete process.env.SDKMANAGER_PATH;
+      else process.env.SDKMANAGER_PATH = saved;
+    }
+    await assert.rejects(installDesktopHeadUnit({ ...f.config, sdkRoot: undefined }), { code: "DHU_SDK_MISSING" });
+    assert.equal(f.runner.calls.length, 0);
+  } finally { await rm(f.sdkRoot, { recursive: true, force: true }); }
+});
+
+test("default SDK discovery finds the Linux SDK without environment overrides", async () => {
+  const home = await mkdtemp(join(tmpdir(), "dhu-home-"));
+  const keys = ["HOME", "ANDROID_HOME", "ANDROID_SDK_ROOT", "SDKMANAGER_PATH", "ADB_PATH"];
+  const saved = new Map(keys.map(key => [key, process.env[key]]));
+  try {
+    const sdk = join(home, "Android/Sdk");
+    await mkdir(join(sdk, "cmdline-tools/latest/bin"), { recursive: true });
+    await mkdir(join(sdk, "extras/google/auto"), { recursive: true });
+    await writeFile(join(sdk, "cmdline-tools/latest/bin/sdkmanager"), "fixture");
+    await writeFile(join(sdk, "extras/google/auto/desktop-head-unit"), "fixture", { mode: 0o700 });
+    for (const key of keys) delete process.env[key];
+    process.env.HOME = home;
+    const config = getDefaultRuntimeConfig();
+    assert.equal(config.sdkRoot, sdk);
+    assert.equal(config.sdkmanagerPath, join(sdk, "cmdline-tools/latest/bin/sdkmanager"));
+    assert.equal((await desktopHeadUnitStatus(config)).executableReady, true);
+  } finally {
+    for (const [key, value] of saved) {
+      if (value === undefined) delete process.env[key]; else process.env[key] = value;
+    }
+    await rm(home, { recursive: true, force: true });
+  }
 });

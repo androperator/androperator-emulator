@@ -1,6 +1,6 @@
 import { access, chmod, stat } from "node:fs/promises";
 import { constants } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import type { RuntimeConfig } from "./runtimeConfig.js";
 
 export const desktopHeadUnitPackage = "extras;google;auto";
@@ -19,9 +19,9 @@ export async function desktopHeadUnitStatus(config: RuntimeConfig) {
 }
 
 export async function installDesktopHeadUnit(config: RuntimeConfig) {
-  const result = await config.runner.run(config.sdkmanagerPath, [desktopHeadUnitPackage], { timeoutMs: 600_000 });
-  if (result.code !== 0 || result.error) throw { code: "DHU_INSTALL_FAILED", message: result.stderr || result.error?.message || "Desktop Head Unit installation failed. Accept SDK licenses separately, then retry." };
   const executable = desktopHeadUnitPath(config);
+  const result = await config.runner.run(config.sdkmanagerPath, [`--sdk_root=${resolve(config.sdkRoot!)}`, desktopHeadUnitPackage], { timeoutMs: 600_000 });
+  if (result.code !== 0 || result.error) throw { code: "DHU_INSTALL_FAILED", message: result.stderr || result.error?.message || "Desktop Head Unit installation failed. Accept SDK licenses separately, then retry." };
   if (process.platform !== "win32") {
     const mode = (await stat(executable)).mode;
     await chmod(executable, mode | 0o100);
