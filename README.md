@@ -12,7 +12,7 @@ npm ci
 npm run build
 npm test
 npm pack
-npm install -g ./androperator-emulator-0.2.0.tgz
+npm install -g ./androperator-emulator-0.3.0.tgz
 androperator-emulator --version
 ```
 
@@ -182,3 +182,34 @@ are not yet supported. Export `ANDROID_AVD_HOME` consistently for those setups.
 
 GitHub Actions builds, tests and checks a packed installation on Linux and macOS.
 See [releasing](docs/releasing.md) for the first publication and subsequent releases.
+
+## Android Auto Desktop Head Unit
+
+Android Auto uses Google's Desktop Head Unit (DHU), separately from Android
+Automotive OS AVDs. Set `ANDROID_HOME` or `ANDROID_SDK_ROOT` to your SDK.
+
+```sh
+androperator-emulator dhu-status
+androperator-emulator dhu-install
+androperator-emulator dhu-start DEVICE_SERIAL
+```
+
+Installation downloads `extras;google;auto` using sdkmanager and makes the
+installed binary executable. Accept SDK licenses separately. Nothing is
+installed by status or launch. Keep the package's bundled libraries beside it.
+
+On the selected device, install/update Android Auto, enable Android Auto developer
+mode, select **Start head unit server**, enable **Add new cars to Android Auto**,
+and unlock the screen. Accept first-connection prompts on the device. See
+[Google's DHU guide](https://developer.android.com/training/cars/testing/dhu).
+
+`dhu-start` runs until the head unit closes. Ctrl-C stops it. It uses an
+automatically allocated ADB forwarding port and removes that forward on exit,
+launch failure or interruption. Existing forwards are retained. The final JSON
+envelope confirms process exit, not a successful Android Auto handshake. DHU
+console input, USB accessory transport and custom vehicle configurations are
+not exposed by this initial integration.
+
+Library consumers can use `desktopHeadUnitStatus`, `installDesktopHeadUnit` and
+`runDesktopHeadUnit(config, serial, abortSignal)`. Pass `sdkRoot` explicitly when
+constructing a runtime configuration without SDK environment discovery.

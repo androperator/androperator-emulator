@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { NodeProcessRunner, type ProcessRunner } from "./processRunner.js";
 
 export interface RuntimeConfig {
+  sdkRoot?: string;
   adbPath: string;
   emulatorPath: string;
   sdkmanagerPath: string;
@@ -18,16 +19,25 @@ export function getDefaultRuntimeConfig(overrides: Partial<RuntimeConfig> = {}):
   const sdkRoots = [process.env.ANDROID_HOME, process.env.ANDROID_SDK_ROOT,
     join(homedir(), "Library", "Android", "sdk"), join(homedir(), "Android", "Sdk")]
     .filter((root): root is string => root !== undefined && root.length > 0);
+  const configuredSdkRoot = [process.env.ANDROID_HOME, process.env.ANDROID_SDK_ROOT].find(root => root !== undefined && root.length > 0);
+  const sdkRoot = overrides.sdkRoot
+    ?? configuredSdkRoot
+    ?? sdkRoots.find(root => existsSync(join(root, "cmdline-tools/latest/bin/sdkmanager")))
+    ?? sdkRoots.find(root => existsSync(join(root, "platform-tools/adb")))
+    ?? sdkRoots.find(existsSync)
+    ?? sdkRoots[0];
   function tool(name: string, relativePath: string, env: string): string {
     const explicit = process.env[env];
     if (explicit !== undefined) {
       if (!explicit.trim()) throw new Error(`${env} must not be blank`);
       return explicit;
     }
+    if (overrides.sdkRoot !== undefined) return join(overrides.sdkRoot, relativePath);
     return sdkRoots.map((root) => join(root, relativePath)).find(existsSync) ?? name;
   }
   const defined = Object.fromEntries(Object.entries(overrides).filter(([, value]) => value !== undefined));
   return {
+    sdkRoot,
     adbPath: tool("adb", "platform-tools/adb", "ADB_PATH"),
     emulatorPath: tool("emulator", "emulator/emulator", "EMULATOR_PATH"),
     sdkmanagerPath: tool("sdkmanager", "cmdline-tools/latest/bin/sdkmanager", "SDKMANAGER_PATH"),

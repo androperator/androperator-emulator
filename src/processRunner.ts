@@ -11,7 +11,7 @@ export interface ProcessResult {
 export interface ProcessRunner {
   run(command: string, args: string[], options?: { timeoutMs?: number; cwd?: string; input?: string }): Promise<ProcessResult>;
   // Detached emulator launch.
-  spawn(command: string, args: string[], options?: { detached?: boolean; stdio?: any; shell?: boolean; env?: NodeJS.ProcessEnv }): any;
+  spawn(command: string, args: string[], options?: { detached?: boolean; stdio?: any; shell?: boolean; env?: NodeJS.ProcessEnv; cwd?: string }): any;
 }
 
 export class NodeProcessRunner implements ProcessRunner {
@@ -64,7 +64,7 @@ export class NodeProcessRunner implements ProcessRunner {
     });
   }
 
-  spawn(command: string, args: string[], options?: { detached?: boolean; stdio?: any; shell?: boolean; env?: NodeJS.ProcessEnv }): any {
+  spawn(command: string, args: string[], options?: { detached?: boolean; stdio?: any; shell?: boolean; env?: NodeJS.ProcessEnv; cwd?: string }): any {
     const detached = options?.detached ?? false;
     const stdio = options?.stdio ?? (detached ? ["ignore", "ignore", "ignore"] : ["ignore", "pipe", "pipe"]);
     return spawn(command, args, {
@@ -72,6 +72,7 @@ export class NodeProcessRunner implements ProcessRunner {
       stdio,
       shell: options?.shell ?? false,
       env: options?.env,
+      cwd: options?.cwd,
     });
   }
 }
